@@ -1,0 +1,15 @@
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'marysawlamirsa7@gmail.com'
+  smtp_auth_username: 'marysawlamirsa7@gmail.com'
+  smtp_auth_password: 'ijim jaqs phrf yhob'
+  smtp_require_tls: true
+
+route:
+  receiver: 'email-alert'
+
+receivers:
+  - name: 'email-alert'
+    email_configs:
+      - to: 'marysawlamirsa7@gmail.com'
+        send_resolved: true
