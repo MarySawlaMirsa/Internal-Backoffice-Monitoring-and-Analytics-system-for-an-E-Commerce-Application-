@@ -1,0 +1,13 @@
+{
+  "name": "writer-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.12.0",
+    "prom-client": "^15.1.3"
+  }
+}
