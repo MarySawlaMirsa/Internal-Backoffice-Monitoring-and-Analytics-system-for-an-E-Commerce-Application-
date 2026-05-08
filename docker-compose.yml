@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppass
+      POSTGRES_DB: metricsdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  writer-service:
+    build: ./writer-service
+    container_name: writer-service
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: appuser
+      PGPASSWORD: apppass
+      PGDATABASE: metricsdb
+      PORT: 3002
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
+
+  mongo:
+    image: mongo:7
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  ecommerce-backend:
+    build: ./backend
+    container_name: ecommerce-backend
+    environment:
+      MONGO_URL: mongodb://mongo:27017/ecommerce
+      PORT: 5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - mongo
+
+  ecommerce-frontend:
+    build: ./frontend
+    container_name: ecommerce-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - ecommerce-backend
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - writer-service
+      - ecommerce-backend
+      - alertmanager
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=smtp.gmail.com:465
+      - GF_SMTP_USER=marysawlamirsa7@gmail.com
+      - GF_SMTP_PASSWORD=jdkn tkoc yodk rbga
+      - GF_SMTP_FROM_ADDRESS=marysawlamirsa7@gmail.com
+      - GF_SMTP_FROM_NAME=E-commerce Monitoring Alerts
+      - GF_SMTP_SKIP_VERIFY=true
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  mongo_data:
+  grafana_data:
