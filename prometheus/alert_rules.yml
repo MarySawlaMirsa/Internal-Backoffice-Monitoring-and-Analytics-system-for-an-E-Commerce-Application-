@@ -1,0 +1,65 @@
+groups:
+  - name: application-alerts
+    rules:
+      - alert: WriterServiceDown
+        expr: up{job="writer-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Writer service is down"
+          description: "Prometheus cannot scrape writer-service for more than 1 minute."
+
+      - alert: EcommerceBackendDown
+        expr: up{job="ecommerce-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "E-commerce backend is down"
+          description: "Prometheus cannot scrape ecommerce-backend for more than 1 minute."
+
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus is down"
+          description: "Prometheus target is unreachable for more than 1 minute."
+
+      - alert: HighCPUUsageWriterService
+        expr: rate(process_cpu_seconds_total{job="writer-service"}[1m]) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage in writer service"
+          description: "Writer service CPU usage is high for more than 2 minutes."
+
+      - alert: HighCPUUsageEcommerceBackend
+        expr: rate(process_cpu_seconds_total{job="ecommerce-backend"}[1m]) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage in e-commerce backend"
+          description: "E-commerce backend CPU usage is high for more than 2 minutes."
+
+      - alert: HighMemoryUsageWriterService
+        expr: process_resident_memory_bytes{job="writer-service"} > 200000000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage in writer service"
+          description: "Writer service memory usage is above 200 MB for more than 2 minutes."
+
+      - alert: HighMemoryUsageEcommerceBackend
+        expr: process_resident_memory_bytes{job="ecommerce-backend"} > 300000000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage in e-commerce backend"
+          description: "E-commerce backend memory usage is above 300 MB for more than 2 minutes."
